@@ -30,10 +30,6 @@ THE SOFTWARE.
 #include "HMC5883L.h"
 #include "stm32f10x_i2c.h"
 
-/** Default I2C address.
- * @see HMC5883L_DEFAULT_ADDRESS
- */
-uint8_t m_buffer[6];    // renamed this variable, before it was buffer[6], Hari
 uint8_t HMC5883Lmode;
 
 /** Power on and prepare for general usage.
@@ -65,8 +61,9 @@ void HMC5883L_Initialize() {
  */
 bool HMC5883L_TestConnection() 
 {  
-      HMC5883L_I2C_BufferRead(HMC5883L_DEFAULT_ADDRESS, m_buffer, HMC5883L_RA_ID_A, 3);  
-      if((m_buffer[0] == 'H' && m_buffer[1] == '4' && m_buffer[2] == '3'))
+      uint8_t tmp[3]={0};
+      HMC5883L_I2C_BufferRead(HMC5883L_DEFAULT_ADDRESS, tmp, HMC5883L_RA_ID_A, 3);  
+      if((tmp[0] == 'H' && tmp[1] == '4' && tmp[2] == '3'))
         return TRUE;
       else
         return FALSE;
@@ -268,14 +265,15 @@ void HMC5883L_SetMode(uint8_t newMode) {
  */
 void HMC5883L_GetHeading(s16* Mag)
 {
-    HMC5883L_I2C_BufferRead(HMC5883L_DEFAULT_ADDRESS, m_buffer, HMC5883L_RA_DATAX_H, 6);  
+    uint8_t tmpbuff[6]={0};
+    HMC5883L_I2C_BufferRead(HMC5883L_DEFAULT_ADDRESS, tmpbuff, HMC5883L_RA_DATAX_H, 6);  
     
-    uint8_t b = HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1);
+    uint8_t tmp = HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1);
 
     if (HMC5883Lmode == HMC5883L_MODE_SINGLE) 
-      HMC5883L_I2C_ByteWrite(HMC5883L_DEFAULT_ADDRESS, &b ,HMC5883L_RA_MODE);
+      HMC5883L_I2C_ByteWrite(HMC5883L_DEFAULT_ADDRESS, &tmp ,HMC5883L_RA_MODE);
     for(int i=0; i<3; i++)
-      Mag[i]=((s16)((u16)m_buffer[2*i] << 8) + m_buffer[2*i+1]);
+      Mag[i]=((s16)((u16)tmpbuff[2*i] << 8) + tmpbuff[2*i+1]);
 }
 
 // STATUS register
@@ -418,12 +416,12 @@ void HMC5883L_I2C_Init(void)
 
 /**
 * @brief  Writes one byte to the  HMC5883L.
-* @param  slAddr : slave address HMC5883L_DEFAULT_ADDRESS
+* @param  slaveAddr : slave address HMC5883L_DEFAULT_ADDRESS
 * @param  pBuffer : pointer to the buffer  containing the data to be written to the HMC5883L.
 * @param  WriteAddr : address of the register in which the data will be written
 * @retval None
 */
-void HMC5883L_I2C_ByteWrite(u8 slAddr, u8* pBuffer, u8 WriteAddr)
+void HMC5883L_I2C_ByteWrite(u8 slaveAddr, u8* pBuffer, u8 WriteAddr)
 {
 //  ENTR_CRT_SECTION();
 
@@ -434,7 +432,7 @@ void HMC5883L_I2C_ByteWrite(u8 slAddr, u8* pBuffer, u8 WriteAddr)
   while(!I2C_CheckEvent(HMC5883L_I2C, I2C_EVENT_MASTER_MODE_SELECT));
 
   /* Send HMC5883 address for write */
-  I2C_Send7bitAddress(HMC5883L_I2C, slAddr, I2C_Direction_Transmitter);
+  I2C_Send7bitAddress(HMC5883L_I2C, slaveAddr, I2C_Direction_Transmitter);
 
   /* Test on EV6 and clear it */
   while(!I2C_CheckEvent(HMC5883L_I2C, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
@@ -459,14 +457,14 @@ void HMC5883L_I2C_ByteWrite(u8 slAddr, u8* pBuffer, u8 WriteAddr)
 
 /**
 * @brief  Reads a block of data from the HMC5883L.
-* @param  slAddr  : slave address HMC5883L_DEFAULT_ADDRESS
+* @param  slaveAddr  : slave address HMC5883L_DEFAULT_ADDRESS
 * @param  pBuffer : pointer to the buffer that receives the data read from the HMC5883L.
 * @param  ReadAddr : HMC5883L's internal address to read from.
 * @param  NumByteToRead : number of bytes to read from the HMC5883L ( NumByteToRead >1  only for the Magnetometer reading).
 * @retval None
 */
 
-void HMC5883L_I2C_BufferRead(u8 slAddr, u8* pBuffer, u8 ReadAddr, u16 NumByteToRead)
+void HMC5883L_I2C_BufferRead(u8 slaveAddr, u8* pBuffer, u8 ReadAddr, u16 NumByteToRead)
 {
  // ENTR_CRT_SECTION();
 
@@ -480,7 +478,7 @@ void HMC5883L_I2C_BufferRead(u8 slAddr, u8* pBuffer, u8 ReadAddr, u16 NumByteToR
   while(!I2C_CheckEvent(HMC5883L_I2C, I2C_EVENT_MASTER_MODE_SELECT));
 
   /* Send HMC5883L_Magn address for write */ // Send HMC5883L address for write 
-  I2C_Send7bitAddress(HMC5883L_I2C, slAddr, I2C_Direction_Transmitter);
+  I2C_Send7bitAddress(HMC5883L_I2C, slaveAddr, I2C_Direction_Transmitter);
 
   /* Test on EV6 and clear it */
   while(!I2C_CheckEvent(HMC5883L_I2C, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
@@ -501,7 +499,7 @@ void HMC5883L_I2C_BufferRead(u8 slAddr, u8* pBuffer, u8 ReadAddr, u16 NumByteToR
   while(!I2C_CheckEvent(HMC5883L_I2C, I2C_EVENT_MASTER_MODE_SELECT));
 
   /* Send HMC5883L address for read */
-  I2C_Send7bitAddress(HMC5883L_I2C, slAddr, I2C_Direction_Receiver);
+  I2C_Send7bitAddress(HMC5883L_I2C, slaveAddr, I2C_Direction_Receiver);
 
   /* Test on EV6 and clear it */
   while(!I2C_CheckEvent(HMC5883L_I2C, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED));
