@@ -60,4 +60,4 @@ THE SOFTWARE.
 
 #endif /* __HAL___HMC5883L_H */
 
-/******************* (C) COPYRIGHT 2012 Harinadha Reddy C *****END OF FILE****/
+/******************* (C) COPYRIGHT 2012 Harinadha Reddy Chintalapalli *****END OF FILE****/
