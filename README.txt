@@ -1,5 +1,5 @@
 ============================================================================
-     For More details, please visit: http://harinadha.wordpress.com
+     For More details, visit: http://harinadha.wordpress.com
 ============================================================================
 
 The HMC5883L I2C Device Library provides simple and intuitive interfaces to HMC5883L I2C device on ARM 32-bit STM32F103xx family of microcontrollers.It has the I2C bit- and byte-level communication for complete coverage of all functionality described by HMC5883L documentation.
