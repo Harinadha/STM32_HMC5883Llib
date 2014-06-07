@@ -32,8 +32,7 @@
 #define _HMC5883L_H_
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif 
 
 /* Includes */
