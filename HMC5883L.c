@@ -278,8 +278,7 @@ void HMC5883L_SetMode(uint8_t newMode)
  */
 void HMC5883L_GetHeading(s16* Mag)
 {
-    uint8_t tmpbuff[6] =
-    { 0 };
+    uint8_t tmpbuff[6] = { 0 };
     HMC5883L_I2C_BufferRead(HMC5883L_DEFAULT_ADDRESS, tmpbuff, HMC5883L_RA_DATAX_H, 6);
 
     uint8_t tmp = HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1);
